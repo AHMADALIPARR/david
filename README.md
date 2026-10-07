@@ -76,13 +76,15 @@ Exact invocation may match local `j/` README helpers. Python harness tests are o
 
 Screenshots land under `docs/images/`:
 
+![David demos](docs/images/david-demos.png)
+
 ![David evidence smoke](docs/images/david-evidence.png)
 
 ![David execution smoke](docs/images/david-execution.png)
 
 ![David Prolog smoke](docs/images/david-prolog.png)
 
-*(If PNGs are not yet present, drop them into `docs/images/`.)*
+*(Primary capture is `david-demos.png`; the evidence/execution/prolog names are aliases of the same shot for now.)*
 
 ## License
 
