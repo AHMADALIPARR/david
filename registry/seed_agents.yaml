@@ -117,3 +117,16 @@
   dependencies: []
   execution_endpoint: agent://Response
   control_plane: true
+
+- agent_id: Quant
+  domain: markets
+  capabilities: [pricing, monte_carlo, greeks]
+  languages: [python]
+  input_types: [market_data, positions]
+  output_types: [price, risk_metrics]
+  required_evidence: [market_data]
+  permissions: [read_market_data]
+  risk_class: medium
+  dependencies: []
+  execution_endpoint: agent://Quant
+  control_plane: false

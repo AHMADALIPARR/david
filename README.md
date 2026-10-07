@@ -95,3 +95,14 @@ Screenshots land under `docs/images/`:
 - Alapeno hardware and Foundry F1 audit/linker/seals (see sibling [foundry-j](https://github.com/AHMADALIPARR/foundry-j) for pure-J math cores only)
 - Growing the Python trees as the product surface
 - Claiming live PostgreSQL/pgvector query results in this README
+
+## Live AGENT-index smoke
+
+Measured on local PostgreSQL 17 + pgvector (hashed bag-of-tokens embeddings for smoke only):
+
+- Loaded 10 agents from `registry/seed_agents.yaml` into `agent_registry`
+- COBOL balance query ANN top-5: **LegacyCobol** (sim≈0.407), ReverseEngineering, MigrationValidation, Modernization, Response
+- **Quant** absent from top-5 (`quant_not_preferred=True`)
+- Log: `logs/agent_ann_smoke.log`
+- Harness: `scripts/load_agent_registry.py`, `scripts/agent_ann_smoke.py`
+

@@ -1,0 +1,10 @@
+query=Explain how this COBOL payment program calculates the account balance and determ...
+top_k=5
+1	LegacyCobol	legacy_mainframe	high	sim=0.406562
+2	ReverseEngineering	legacy_mainframe	medium	sim=0.309016
+3	MigrationValidation	migration	high	sim=0.160817
+4	Modernization	migration	high	sim=0.154508
+5	Response	control_plane	medium	sim=0.000000
+legacy_in_topk=True
+quant_not_preferred=True
+pass=True
