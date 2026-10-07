@@ -37,3 +37,9 @@ Predicates (not score penalties). An agent is eligible only if all three hold:
 
 `apply_symbolic_filters` returns the agents that pass all three.
 `minimum_agent_set` scores via `scorer.score_agent`, takes top-K, hard-filters, greedy-covers required capabilities, closes dependencies, then appends mandatory control-plane agents (`Risk`, `Response`). Pure dependency agents waive capability_eligible; after closure every agent must still pass permission + risk (else the parent needing a failing dep is dropped). Mandatory control plane skips the risk gate but still requires permission (same as scorer `include_control_plane`).
+
+## J execution (product)
+
+`j/execution.ijs` consumes the Prolog selected-set (one `agent_id` per line) and builds
+WorkItems only for that set. `bundle_ok` requires each evidence row to carry non-empty
+`evidence_id`, `source_id`, and `content_hash` — bare text is rejected.
