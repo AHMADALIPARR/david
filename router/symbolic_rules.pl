@@ -2,9 +2,14 @@
 % Copyright (C) 2026 David contributors
 % Executable eligibility rules for Synthetic David sparse router.
 % Authoritative symbolic layer: embeddings propose; these rules decide.
+% Agent facts live in registry_facts.pl (generated from seed_agents.yaml).
+% Atom map: registry agent_id → Prolog atom via downcase-first-letter
+%   (see agent_id/2 in registry_facts.pl). Quant is a negative agent.
 % Run: swipl -q -s symbolic_rules.pl -g smoke_cobol -t halt
+% Product path: J writes request + ann_candidate facts, calls run_eligibility/1.
 
 :- style_check(-singleton).
+:- include('registry_facts.pl').
 
 % ---- risk order ----
 risk_rank(low, 0).
@@ -17,88 +22,14 @@ risk_exceeds(AgentRisk, MaxRisk) :-
     risk_rank(MaxRisk, M),
     A > M.
 
-% ---- seed registry (AgentDescriptor facts) ----
-agent(legacyCobol).
-agent(database).
-agent(reverseEngineering).
-agent(modernization).
-agent(migrationValidation).
-agent(provenance).
-agent(risk).
-agent(audit).
-agent(response).
-agent(quant).
-
-control_plane(risk).
-control_plane(audit).
-control_plane(response).
-
-capability(legacyCobol, cobol).
-capability(legacyCobol, copybook_analysis).
-capability(legacyCobol, control_flow).
-capability(legacyCobol, data_flow).
-capability(legacyCobol, business_rule_extraction).
-capability(legacyCobol, modernization_analysis).
-capability(database, schema_analysis).
-capability(database, db2).
-capability(database, sql).
-capability(reverseEngineering, call_graph).
-capability(reverseEngineering, control_flow).
-capability(reverseEngineering, data_flow).
-capability(modernization, cobol_to_java).
-capability(modernization, api_mapping).
-capability(migrationValidation, equivalence).
-capability(migrationValidation, behavioral_compare).
-capability(provenance, provenance_dag).
-capability(provenance, content_hash).
-capability(provenance, authority).
-capability(risk, risk_policy).
-capability(risk, escalation).
-capability(audit, audit_trail).
-capability(audit, compliance).
-capability(response, synthesis).
-capability(response, user_response).
-capability(quant, pricing).
-capability(quant, monte_carlo).
-
-permission(legacyCobol, read_source).
-permission(legacyCobol, read_copybooks).
-permission(database, read_schema).
-permission(reverseEngineering, read_source).
-permission(modernization, read_source).
-permission(modernization, write_plan).
-permission(migrationValidation, read_outputs).
-permission(provenance, read_evidence).
-permission(provenance, write_provenance).
-permission(risk, read_all_results).
-permission(audit, read_all_results).
-permission(response, read_conclusions).
-permission(quant, read_market_data).
-
-risk_class(legacyCobol, high).
-risk_class(database, medium).
-risk_class(reverseEngineering, medium).
-risk_class(modernization, high).
-risk_class(migrationValidation, high).
-risk_class(provenance, medium).
-risk_class(risk, critical).
-risk_class(audit, high).
-risk_class(response, medium).
-risk_class(quant, medium).
-
-depends(legacyCobol, database).
-depends(legacyCobol, reverseEngineering).
-depends(legacyCobol, provenance).
-depends(modernization, legacyCobol).
-depends(modernization, provenance).
-depends(migrationValidation, provenance).
-depends(migrationValidation, legacyCobol).
-depends(audit, provenance).
-
-% ---- request context (dynamic; smoke asserts cobol_req) ----
+% ---- request context (dynamic; J / smoke asserts) ----
 % required_capability(Req, Cap).
 % granted_permission(Req, Perm).
 % max_risk_class(Req, Class).
+% ann_candidate(Req, AgentAtom).  % optional; when present, core pick restricted
+
+:- dynamic required_capability/2, granted_permission/2, max_risk_class/2.
+:- dynamic ann_candidate/2.
 
 % ---- hard filters ----
 capability_eligible(Agent, Req) :-
@@ -152,18 +83,26 @@ closure_([H|T], Acc, Closed) :-
 
 % ---- minimum agent set ----
 % 1. Collect agents that cover at least one required capability and pass hard filters
+%    (if ann_candidate/2 facts exist for Req, restrict core seeds to those candidates)
 % 2. Greedy cover of required capabilities (order by agent atom for determinism)
 % 3. Dependency closure; drop incomplete parents if a dep fails dep_eligible
 % 4. Append mandatory Risk + Response if permitted
+% Quant has no overlapping caps for COBOL requests → dropped.
 
 covers_required(Agent, Req, Cap) :-
     required_capability(Req, Cap),
     capability(Agent, Cap).
 
+% When ANN candidates are asserted for Req, only those may be core seeds.
+% Deps and mandatory control-plane agents are still closed in below.
+in_ann_or_unrestricted(Agent, Req) :-
+    ( ann_candidate(Req, _) -> ann_candidate(Req, Agent) ; true ).
+
 candidate_core(Agent, Req) :-
     eligible(Agent, Req),
     \+ control_plane(Agent),
-    covers_required(Agent, Req, _).
+    covers_required(Agent, Req, _),
+    in_ann_or_unrestricted(Agent, Req).
 
 greedy_cover(Req, Selected) :-
     findall(Cap, required_capability(Req, Cap), Caps0),
@@ -205,8 +144,6 @@ filter_closure([A|As], Req, [A|Bs]) :-
 filter_closure([_|As], Req, Bs) :-
     filter_closure(As, Req, Bs).
 
-% Simpler durable rule: after closure, every member must be dep_eligible;
-% seed cores must have been candidate_core.
 closed_ok(Closed, Req, Seed) :-
     forall(member(A, Seed), candidate_core(A, Req)),
     forall(member(A, Closed), dep_eligible(A, Req)).
@@ -215,7 +152,6 @@ minimum_agent_set(Req, Final) :-
     greedy_cover(Req, Seed),
     closure(Seed, Closed0),
     include(dep_ok(Req), Closed0, Closed),
-    % drop any seed whose required deps were filtered out
     include(deps_satisfied(Closed), Closed, CoreKept),
     mandatory_control(Req, Mand),
     append(CoreKept, Mand, Raw),
@@ -232,11 +168,17 @@ mandatory_control(Req, Mand) :-
         mandatory_control_eligible(A, Req)
     ), Mand).
 
-% ---- COBOL smoke request ----
+% ---- product entry: print selected atoms (J parses this line) ----
+run_eligibility(Req) :-
+    minimum_agent_set(Req, Selected),
+    format('selected:~w~n', [Selected]).
+
+% ---- COBOL smoke request (no ANN candidates → full registry core) ----
 assert_cobol_req :-
     retractall(required_capability(cobol_req, _)),
     retractall(granted_permission(cobol_req, _)),
     retractall(max_risk_class(cobol_req, _)),
+    retractall(ann_candidate(cobol_req, _)),
     assertz(required_capability(cobol_req, cobol)),
     assertz(required_capability(cobol_req, business_rule_extraction)),
     assertz(granted_permission(cobol_req, read_source)),
@@ -247,8 +189,6 @@ assert_cobol_req :-
     assertz(granted_permission(cobol_req, read_all_results)),
     assertz(granted_permission(cobol_req, read_conclusions)),
     assertz(max_risk_class(cobol_req, high)).
-
-:- dynamic required_capability/2, granted_permission/2, max_risk_class/2.
 
 smoke_cobol :-
     assert_cobol_req,

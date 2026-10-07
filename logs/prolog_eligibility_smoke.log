@@ -1,0 +1,7 @@
+┌───────────┬───────────┬──────────────────┬───────────────────┬─────────────┬────────┬─────┐
+│candidates:│LegacyCobol│ReverseEngineering│MigrationValidation│Modernization│Response│Quant│
+└───────────┴───────────┴──────────────────┴───────────────────┴─────────────┴────────┴─────┘
+┌─────────┬───────────┬────────┬──────────────────┬──────────┬────┬────────┐
+│selected:│legacyCobol│database│reverseEngineering│provenance│risk│response│
+└─────────┴───────────┴────────┴──────────────────┴──────────┴────┴────────┘
+eligibility_smoke: OK

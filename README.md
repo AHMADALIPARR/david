@@ -5,7 +5,7 @@ Sparse Mixture of Agents router: embeddings propose candidates; symbols decide e
 ## Idea
 
 - Embeddings answer “who looks capable?”
-- Executable Prolog (`router/symbolic_rules.pl`) plus the J scorer answer “who is permitted and sufficient?”
+- Executable Prolog (`router/symbolic_rules.pl`) plus the J eligibility caller (`j/eligibility.ijs`) answer “who is permitted and sufficient?”
 - Similarity is never the authority; only the minimum justified agent set executes.
 
 ## Product vs harness
@@ -15,7 +15,8 @@ Sparse Mixture of Agents router: embeddings propose candidates; symbols decide e
 | `j/` | **Product** — scorer, execution, evidence retrieve (`scorer.ijs`, `execution.ijs`, `evidence.ijs`) |
 | `sql/` | **Product** — AGENT / EVIDENCE indexes and hybrid retrieve SQL (for PostgreSQL + pgvector) |
 | `registry/` | **Product** — `AgentDescriptor` schema + seed descriptors |
-| `router/symbolic_rules.pl` | **Product** — symbolic eligibility (SWI-Prolog) |
+| `router/symbolic_rules.pl` + `registry_facts.pl` | **Product** — symbolic eligibility (SWI-Prolog); facts generated from seed YAML |
+| `j/eligibility.ijs` | **Product** — J → Prolog eligibility caller (candidates + request → minimum set) |
 | `docs/` | Contracts (WorkItem / AgentResult / Evidence) |
 | `logs/` | Measured smoke outputs |
 | `evidence/*.py`, `execution/*.py`, `router/*.py` | **Harness only** — do not grow as the product |
@@ -29,8 +30,11 @@ j/                 J product (scorer, execution, evidence, smokes)
 sql/               PostgreSQL/pgvector indexes + hybrid retrieve
 registry/          agent descriptor schema + seeds
 router/
-  symbolic_rules.pl   product Prolog eligibility
+  symbolic_rules.pl   product Prolog eligibility rules
+  registry_facts.pl   generated agent facts (from seed_agents.yaml)
   *.py                Python smoke harness
+j/eligibility.ijs     product J → Prolog eligibility caller
+scripts/gen_registry_facts.py / check_prolog_registry_sync.sh   harness sync
 evidence/          Python smoke harness (J evidence.ijs is product)
 execution/         Python smoke harness (J execution.ijs is product)
 docs/              contracts + screenshot placeholders
@@ -55,6 +59,14 @@ Log: `logs/j_execution_smoke.log`
 `smoke_cobol: OK`  
 Log: `logs/prolog_smoke_cobol.log`
 
+**Prolog↔registry sync** — `prolog_registry_sync: OK` (10 agents; Quant present as negative)  
+Log: `logs/prolog_registry_sync.log`
+
+**J→Prolog eligibility smoke** — candidates ANN fixture + Quant; selected  
+`legacyCobol, database, reverseEngineering, provenance, risk, response` (Quant absent)  
+`eligibility_smoke: OK`  
+Log: `logs/prolog_eligibility_smoke.log`
+
 ## How to run smokes
 
 Requires J `jconsole` and (for Prolog) SWI-Prolog.
@@ -68,9 +80,15 @@ jconsole j/run_execution_smoke.ijs
 
 # Prolog COBOL eligibility smoke (see router/symbolic_rules.pl)
 swipl -q -s router/symbolic_rules.pl -g smoke_cobol -t halt
+
+# Prolog↔registry sync (harness; fails if registry_facts.pl dirty)
+./scripts/check_prolog_registry_sync.sh
+
+# J → Prolog product eligibility smoke (must exit; uses fixtures/ann_topk.txt)
+cd j && /home/box/j/j9.7/bin/jconsole run_eligibility_smoke.ijs
 ```
 
-Exact invocation may match local `j/` README helpers. Python harness tests are optional and are not the product path.
+Spec product path is **Prolog + J eligibility caller** (`j/eligibility.ijs` → `swipl`). Python harness tests are optional and are not the product path.
 
 ## Demo screenshots
 

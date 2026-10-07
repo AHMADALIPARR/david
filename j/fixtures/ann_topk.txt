@@ -1,0 +1,8 @@
+# Fixture: ANN top-K style candidates matching Grok Bot live AGENT smoke
+# plus Quant as a negative (should not be selected for COBOL eligibility).
+LegacyCobol
+ReverseEngineering
+MigrationValidation
+Modernization
+Response
+Quant
