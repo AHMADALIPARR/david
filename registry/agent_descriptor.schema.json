@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://david.local/schemas/agent_descriptor.json",
+  "title": "AgentDescriptor",
+  "type": "object",
+  "required": [
+    "agent_id",
+    "domain",
+    "capabilities",
+    "languages",
+    "input_types",
+    "output_types",
+    "required_evidence",
+    "permissions",
+    "risk_class",
+    "dependencies",
+    "execution_endpoint"
+  ],
+  "properties": {
+    "agent_id": { "type": "string", "minLength": 1 },
+    "domain": { "type": "string" },
+    "capabilities": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "languages": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "input_types": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "output_types": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "required_evidence": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "permissions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "risk_class": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"]
+    },
+    "dependencies": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Other agent_id values required for dependency closure"
+    },
+    "embedding": {
+      "type": "array",
+      "items": { "type": "number" },
+      "description": "Optional; usually stored only in pgvector"
+    },
+    "execution_endpoint": { "type": "string" },
+    "control_plane": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, always considered for Risk/Audit/Response closure"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,6 @@
+┌──┬──────────────┬───────────────┬────────────────┬──────────────────┬───────────────────┐
+│ok│ev_copybook_01│ev_cobol_src_01│ev_db2_schema_01│ev_lexical_lift_01│ev_quant_pricing_01│
+└──┴──────────────┴───────────────┴────────────────┴──────────────────┴───────────────────┘
+exit_code=0
+SQL product query: sql/002_evidence_hybrid_retrieve.sql
+Python evidence/ is harness only — do not grow; J evidence.ijs is the product path.

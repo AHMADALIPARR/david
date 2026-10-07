@@ -1,0 +1,119 @@
+# Seed routable agents (not permanently active processes)
+
+- agent_id: LegacyCobol
+  domain: legacy_mainframe
+  capabilities:
+    - cobol
+    - copybook_analysis
+    - control_flow
+    - data_flow
+    - business_rule_extraction
+    - modernization_analysis
+  languages: [cobol]
+  input_types: [source_code, copybooks, compiler_metadata]
+  output_types: [call_graph, business_rules, data_flow]
+  required_evidence: [source_code, copybooks, compiler_metadata]
+  permissions: [read_source, read_copybooks]
+  risk_class: high
+  dependencies: [Database, ReverseEngineering, Provenance]
+  execution_endpoint: agent://LegacyCobol
+  control_plane: false
+
+- agent_id: Database
+  domain: data
+  capabilities: [schema_analysis, db2, sql]
+  languages: [sql]
+  input_types: [db_schema, queries]
+  output_types: [schema_map, data_lineage]
+  required_evidence: [db_schema]
+  permissions: [read_schema]
+  risk_class: medium
+  dependencies: []
+  execution_endpoint: agent://Database
+
+- agent_id: ReverseEngineering
+  domain: legacy_mainframe
+  capabilities: [call_graph, control_flow, data_flow]
+  languages: [cobol, java]
+  input_types: [source_code]
+  output_types: [call_graph, cfg]
+  required_evidence: [source_code]
+  permissions: [read_source]
+  risk_class: medium
+  dependencies: []
+  execution_endpoint: agent://ReverseEngineering
+
+- agent_id: Modernization
+  domain: migration
+  capabilities: [cobol_to_java, api_mapping]
+  languages: [cobol, java]
+  input_types: [business_rules, call_graph]
+  output_types: [migration_plan, java_skeleton]
+  required_evidence: [business_rules]
+  permissions: [read_source, write_plan]
+  risk_class: high
+  dependencies: [LegacyCobol, Provenance]
+  execution_endpoint: agent://Modernization
+
+- agent_id: MigrationValidation
+  domain: migration
+  capabilities: [equivalence, behavioral_compare]
+  languages: [cobol, java]
+  input_types: [legacy_output, java_output]
+  output_types: [equivalence_result]
+  required_evidence: [legacy_output, java_output]
+  permissions: [read_outputs]
+  risk_class: high
+  dependencies: [Provenance, LegacyCobol]
+  execution_endpoint: agent://MigrationValidation
+
+- agent_id: Provenance
+  domain: evidence
+  capabilities: [provenance_dag, content_hash, authority]
+  languages: []
+  input_types: [evidence, facts]
+  output_types: [provenance_root, evidence_graph]
+  required_evidence: []
+  permissions: [read_evidence, write_provenance]
+  risk_class: medium
+  dependencies: []
+  execution_endpoint: agent://Provenance
+
+- agent_id: Risk
+  domain: control_plane
+  capabilities: [risk_policy, escalation]
+  languages: []
+  input_types: [agent_results, risk_signals]
+  output_types: [risk_decision]
+  required_evidence: []
+  permissions: [read_all_results]
+  risk_class: critical
+  dependencies: []
+  execution_endpoint: agent://Risk
+  control_plane: true
+
+- agent_id: Audit
+  domain: control_plane
+  capabilities: [audit_trail, compliance]
+  languages: []
+  input_types: [provenance_root, agent_results]
+  output_types: [audit_record]
+  required_evidence: []
+  permissions: [read_all_results]
+  risk_class: high
+  dependencies: [Provenance]
+  execution_endpoint: agent://Audit
+  control_plane: true
+
+- agent_id: Response
+  domain: control_plane
+  capabilities: [synthesis, user_response]
+  languages: []
+  input_types: [conclusions, evidence_bundle]
+  output_types: [response]
+  required_evidence: []
+  permissions: [read_conclusions]
+  risk_class: medium
+  dependencies: []
+  execution_endpoint: agent://Response
+  control_plane: true

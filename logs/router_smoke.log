@@ -1,0 +1,4 @@
+[2026-10-07 06:14:51 PDT] router_smoke minimum_agent_set selected=['LegacyCobol', 'Database', 'Provenance', 'Risk', 'Response']
+[2026-10-07 06:14:51 PDT] Quant absent=True; Risk present=True; Response present=True
+[2026-10-07 06:14:51 PDT] note: scores came from scorer.score_agent only (via symbolic.minimum_agent_set; no second scorer)
+[2026-10-07 06:14:51 PDT] evidence_smoke query='cobol account payment balance CALC-BALANCE' top_evidence_ids=['ev_copybook_01', 'ev_cobol_src_01', 'ev_db2_schema_01', 'ev_lexical_lift_01', 'ev_quant_pricing_01']
