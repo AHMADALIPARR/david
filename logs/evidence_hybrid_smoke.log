@@ -1,0 +1,14 @@
+query=Explain how this COBOL payment program calculates the account balance and determ...
+lexical_query=payment balance account
+top_k=5 min_authority=0.5 require_parent=False
+rank	evidence_id	source_type	score	dense	lexical	authority
+1	ev_cobol_src_01	cobol_source	score=1.589825	dense=0.583714	lexical=0.106111	authority=0.900000
+2	ev_copybook_01	copybook	score=1.323832	dense=0.359546	lexical=0.014286	authority=0.950000
+3	ev_lexical_lift_01	glossary	score=1.207805	dense=0.482805	lexical=0.025000	authority=0.700000
+4	ev_db2_schema_01	db2_schema	score=1.104701	dense=0.243590	lexical=0.011111	authority=0.850000
+5	ev_quant_pricing_01	quant_report	score=1.030079	dense=0.230079	lexical=0.000000	authority=0.800000
+junk_exists=True
+junk_dropped=True
+legacy_in_topk=True
+quant_not_preferred=True
+pass=True

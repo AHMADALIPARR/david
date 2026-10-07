@@ -20,7 +20,7 @@ Sparse Mixture of Agents router: embeddings propose candidates; symbols decide e
 | `logs/` | Measured smoke outputs |
 | `evidence/*.py`, `execution/*.py`, `router/*.py` | **Harness only** — do not grow as the product |
 
-This repository does **not** claim a live Postgres/pgvector instance was exercised in CI here. SQL is shipped as product schema/query text; smoke results below are from J and Prolog harnesses.
+SQL is shipped as product schema/query text. J/Prolog smokes below are harness-local; live PostgreSQL/pgvector AGENT and EVIDENCE smokes are recorded under **Live AGENT-index smoke** and **Live EVIDENCE-index smoke** (hashed bag-of-tokens embeddings for smoke only).
 
 ## Layout
 
@@ -94,7 +94,7 @@ Screenshots land under `docs/images/`:
 
 - Alapeno hardware and Foundry F1 audit/linker/seals (see sibling [foundry-j](https://github.com/AHMADALIPARR/foundry-j) for pure-J math cores only)
 - Growing the Python trees as the product surface
-- Claiming live PostgreSQL/pgvector query results in this README
+- Inventing PostgreSQL/pgvector timings or PASS lines without a real local run
 
 ## Live AGENT-index smoke
 
@@ -106,3 +106,14 @@ Measured on local PostgreSQL 17 + pgvector (hashed bag-of-tokens embeddings for 
 - Log: `logs/agent_ann_smoke.log`
 - Harness: `scripts/load_agent_registry.py`, `scripts/agent_ann_smoke.py`
 
+## Live EVIDENCE-index smoke
+
+Measured on local PostgreSQL 17 + pgvector (hashed bag-of-tokens embeddings for smoke only):
+
+- Loaded 6 COBOL fixtures from `sql/003` IDs into `evidence` with embeddings filled by harness
+- Hybrid retrieve (`sql/002`): dense + lexical + authority; `min_authority=0.5`; `require_parent=false`
+- Top-5: **ev_cobol_src_01**, **ev_copybook_01**, ev_lexical_lift_01, **ev_db2_schema_01**, ev_quant_pricing_01
+- copybook / cobol_src / db2 all rank above Quant; Quant not #1
+- `ev_junk_low_auth` (authority 0.10) dropped by `min_authority=0.5`
+- Log: `logs/evidence_hybrid_smoke.log` (`pass=True`)
+- Harness: `scripts/load_evidence_seed.py`, `scripts/evidence_hybrid_smoke.py`
